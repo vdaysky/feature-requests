@@ -20,6 +20,7 @@ def notion_request(method, url, data):
     print(f"{url}:", json.dumps(res, indent=4))
     if "message" in res:
         print(res["message"])
+        raise Exception(res["message"])
     return r.json()
 
 
@@ -53,13 +54,13 @@ def append_children(block_id, children):
     })
 
 
-def create_database_page(database_id, due_date, title, requested_by, priority, tags, summary, description, user_story):
+def create_database_page(database_id, title, requested_by, priority, tags, summary, description, user_story):
 
     page = notion_post(f"pages", {
         "parent": {
             "database_id": database_id
         },
-        "properties": db_properties(due_date.isoformat(), title, requested_by, priority, tags),
+        "properties": db_properties(title, requested_by, priority, tags),
         "children": [
             heading1("Feature Request", toggle=True, children=[
                 heading2("Feature Description", toggle=True, children=[

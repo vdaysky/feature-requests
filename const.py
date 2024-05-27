@@ -30,6 +30,8 @@ def property_people(people):
             for person in people
         ]
     }
+
+
 def property_text(text):
     return {
         "id": "title",
@@ -65,11 +67,11 @@ def property_select(option):
     }
 
 
-def db_properties(due_date, title, requested_by, priority, tags):
+def db_properties(title, requested_by, priority, tags):
     return {
-        "Due Date": property_date(datetime.date.today().isoformat(), due_date),
+        "Due Date": property_date(datetime.date.today().isoformat(), None),
         "Tags": property_multiselect(tags),
-        "Partecipants": property_people([requested_by]),
+        "Participants": property_people([requested_by]),
         "Requested By": property_people([requested_by]),
         "Name": property_text(title),
         "Priority": property_select(priority),

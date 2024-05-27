@@ -1,4 +1,4 @@
-<template>
+<template xmlns:div="http://www.w3.org/1999/html">
   <v-app>
   <!--  create a form meant to be embedded in iframe
    fields:
@@ -14,63 +14,86 @@
   "user_story": "user story"
    -->
     <v-container>
-      <v-form validate-on="input" v-model="formValid">
+
+      <h1>Feature Request Form</h1>
+      <v-form validate-on="input" v-model="formValid" :readonly="submitting">
         <v-row>
-          <v-col cols="12" md="6">
+          <v-col>
+            <v-alert v-if="alertData" :type="alertData.type"> {{ alertData.text }}</v-alert>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12">
             <v-text-field
               v-model="form.title"
-              label="Title"
+              label="Feature Request Title"
               required
             ></v-text-field>
           </v-col>
-          <v-col cols="12" md="6">
-            <v-select
-              v-model="form.priority"
-              :items="priorities"
-              label="Priority"
-              required
-            ></v-select>
+          <v-col cols="12">
+            <div class="d-flex">
+              <v-select
+                v-model="form.priority"
+                :items="priorities"
+                label="Priority"
+                required
+              >
+                <template #append>
+                  <v-btn color="green" class="h-100" @click="forceRefreshOptions" :disabled="optionsRefreshing">
+                    <v-icon v-if="!optionsRefreshing">mdi-refresh</v-icon>
+                    <v-progress-circular v-if="optionsRefreshing" color="primary" indeterminate size="small"></v-progress-circular>
+                  </v-btn>
+                </template>
+              </v-select>
+            </div>
           </v-col>
-          <v-col cols="12" md="6">
+          <v-col cols="12">
             <v-select
               v-model="form.requested_by"
               :items="users"
-              label="Requested By"
+              label="Feature Requested By"
               required
-            ></v-select>
+            >
+              <template #append>
+                <v-btn color="green" class="h-100" @click="forceRefreshUsers" :disabled="usersRefreshing">
+                  <v-icon v-if="!usersRefreshing">mdi-refresh</v-icon>
+                  <v-progress-circular v-if="usersRefreshing" color="primary" indeterminate size="small"></v-progress-circular>
+                </v-btn>
+              </template>
+            </v-select>
           </v-col>
-          <v-col cols="12" md="6">
+          <v-col cols="12">
             <v-select
               v-model="form.tags"
               :items="tags"
               label="Tags"
+              chips
               multiple
               required
-            ></v-select>
+            >
+              <template #append>
+                <v-btn color="green" class="h-100" @click="forceRefreshOptions" :disabled="optionsRefreshing">
+                  <v-icon v-if="!optionsRefreshing">mdi-refresh</v-icon>
+                  <v-progress-circular v-if="optionsRefreshing" color="primary" indeterminate size="small"></v-progress-circular>
+                </v-btn>
+              </template>
+            </v-select>
           </v-col>
-          <v-col cols="12" md="6">
-            <v-text-field
-              type="date"
-              v-model="form.due_date"
-              label="Due Date"
-              required
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="form.summary"
-              label="Summary"
-              required
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="6">
+          <v-col cols="12">
             <v-textarea
-              v-model="form.description"
-              label="Description"
+              v-model="form.summary"
+              label="Feature Summary"
               required
             ></v-textarea>
           </v-col>
-          <v-col cols="12" md="6">
+          <v-col cols="12">
+            <v-textarea
+              v-model="form.description"
+              label="Feature Description"
+              required
+            ></v-textarea>
+          </v-col>
+          <v-col cols="12">
             <v-textarea
               v-model="form.user_story"
               label="User Story"
@@ -78,18 +101,21 @@
             ></v-textarea>
           </v-col>
           <v-col cols="12">
-            <v-btn @click="createPage" :disabled="!formValid">Submit</v-btn>
+              <v-btn block color="green" @click="createPage" :disabled="submitting">
+                <span class="me-2">Create Page</span>
+                <v-progress-circular v-if="submitting" color="primary" indeterminate size="small"></v-progress-circular>
+              </v-btn>
           </v-col>
         </v-row>
       </v-form>
-      <v-alert v-if="!formValid" type="error">Please fill out all required fields</v-alert>
-      <v-alert v-if="requestFail" type="error">Request failed</v-alert>
     </v-container>
   </v-app>
 </template>
 
 <script>
-const API = "http://127.0.0.1:8000";
+  import {ca} from "vuetify/locale";
+
+  const API = "https://feature-requests.odays.ky/api";
   export default {
     data() {
       return {
@@ -103,10 +129,12 @@ const API = "http://127.0.0.1:8000";
           requested_by: null,
           title: "",
         },
+        alertData: null,
         options: {},
         usersRaw: {},
-        formValid: false,
-        requestFail: false,
+        submitting: false,
+        optionsRefreshing: false,
+        usersRefreshing: false,
       }
     },
     computed: {
@@ -138,23 +166,54 @@ const API = "http://127.0.0.1:8000";
       this.options = await fetch(`${API}/options`).then(res => res.json());
     },
     methods: {
+
+      async forceRefreshUsers(){
+        this.usersRefreshing = true;
+        this.usersRaw = await fetch(`${API}/users?force_refresh=True`).then(res => res.json());
+        this.usersRefreshing = false;
+      },
+      async forceRefreshOptions(){
+        this.optionsRefreshing = true;
+        this.options = await fetch(`${API}/options?force_refresh=True`).then(res => res.json());
+        this.optionsRefreshing = false;
+      },
+      showAlert(type, text, timeout) {
+        const id = Math.random();
+        this.alertData = {type, text, id};
+        setTimeout(() => {
+          if (this.alertData.id === id) {
+            this.alertData = null;
+          }
+        }, timeout);
+      },
       async createPage() {
         if (!this.formValid) {
+          this.showAlert("error", "Form is invalid", 5000);
           return;
         }
-        this.requestFail = false;
 
-        const res = await fetch(`${API}/create`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(this.form)
-        });
-        if (!res.ok) {
-          this.requestFail = true;
+        this.submitting = true;
+        let res;
+        try {
+          res = await fetch(`${API}/create`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(this.form)
+          });
+          console.log(res);
+        } catch (e) {
+          this.showAlert("error", "Failed to create page", 5000);
+          this.submitting = false;
+          return;
         }
-        console.log(res);
+        this.submitting = false;
+        if (!res.ok) {
+          this.showAlert("error", "Failed to create page", 5000);
+          return;
+        }
+        this.showAlert("success", "Page created successfully!", 5000);
         this.form = {
           user_story: "",
           description: "",
