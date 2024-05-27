@@ -24,15 +24,44 @@
         </v-row>
         <v-row>
           <v-col cols="12">
-            <v-text-field
-              v-model="form.title"
-              label="Feature Request Title"
-              required
-            ></v-text-field>
+            <div class="d-flex">
+              <v-text-field
+                class="me-4"
+                hide-details
+                v-model="form.title"
+                label="Feature Request Title"
+                required
+              ></v-text-field>
+              <v-select
+                hide-details
+                v-model="form.requested_by"
+                :items="users"
+                label="Feature Requested By"
+                required
+              >
+                <template #append>
+                  <v-btn color="green" class="h-100" @click="forceRefreshUsers" :disabled="usersRefreshing">
+                    <v-icon v-if="!usersRefreshing">mdi-refresh</v-icon>
+                    <v-progress-circular v-if="usersRefreshing" color="primary" indeterminate size="small"></v-progress-circular>
+                  </v-btn>
+                </template>
+              </v-select>
+            </div>
           </v-col>
           <v-col cols="12">
             <div class="d-flex">
               <v-select
+                class="me-4"
+                hide-details
+                v-model="form.tags"
+                :items="tags"
+                label="Tags"
+                chips
+                multiple
+                required
+              ></v-select>
+              <v-select
+                hide-details
                 v-model="form.priority"
                 :items="priorities"
                 label="Priority"
@@ -48,39 +77,8 @@
             </div>
           </v-col>
           <v-col cols="12">
-            <v-select
-              v-model="form.requested_by"
-              :items="users"
-              label="Feature Requested By"
-              required
-            >
-              <template #append>
-                <v-btn color="green" class="h-100" @click="forceRefreshUsers" :disabled="usersRefreshing">
-                  <v-icon v-if="!usersRefreshing">mdi-refresh</v-icon>
-                  <v-progress-circular v-if="usersRefreshing" color="primary" indeterminate size="small"></v-progress-circular>
-                </v-btn>
-              </template>
-            </v-select>
-          </v-col>
-          <v-col cols="12">
-            <v-select
-              v-model="form.tags"
-              :items="tags"
-              label="Tags"
-              chips
-              multiple
-              required
-            >
-              <template #append>
-                <v-btn color="green" class="h-100" @click="forceRefreshOptions" :disabled="optionsRefreshing">
-                  <v-icon v-if="!optionsRefreshing">mdi-refresh</v-icon>
-                  <v-progress-circular v-if="optionsRefreshing" color="primary" indeterminate size="small"></v-progress-circular>
-                </v-btn>
-              </template>
-            </v-select>
-          </v-col>
-          <v-col cols="12">
             <v-textarea
+              hide-details
               v-model="form.summary"
               label="Feature Summary"
               required
@@ -88,6 +86,7 @@
           </v-col>
           <v-col cols="12">
             <v-textarea
+              hide-details
               v-model="form.description"
               label="Feature Description"
               required
@@ -95,6 +94,7 @@
           </v-col>
           <v-col cols="12">
             <v-textarea
+              hide-details
               v-model="form.user_story"
               label="User Story"
               required

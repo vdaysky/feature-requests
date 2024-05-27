@@ -1,4 +1,5 @@
 from datetime import date
+from typing import List
 
 from fastapi import FastAPI, Query
 from pydantic import BaseModel
@@ -40,7 +41,7 @@ def get_property_options(force_refresh: bool = Query(False)):
 class CreateFeatureRequestData(BaseModel):
     requested_by: str
     priority: str
-    tags: list[str]
+    tags: List[str]
     title: str
     summary: str
     description: str
