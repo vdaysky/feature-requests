@@ -106,6 +106,7 @@
           <v-col cols="12">
 
             <v-textarea
+              rows="2"
               variant="outlined"
               hide-details
               v-model="form.summary"
@@ -124,6 +125,7 @@
           </v-col>
           <v-col cols="12">
             <v-textarea
+              rows="5"
               variant="outlined"
               hide-details
               v-model="form.description"
@@ -141,6 +143,7 @@
           </v-col>
           <v-col cols="12" class="pb-0">
             <v-textarea
+              rows="3"
               variant="outlined"
               hide-details
               v-model="form.user_story"
