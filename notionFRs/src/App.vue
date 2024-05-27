@@ -2,12 +2,13 @@
   <v-theme-provider :theme="themeIsDark ? 'dark' : 'light'">
   <v-app>
     <v-container>
-
-
       <div class="d-flex justify-space-between">
-        <h1>Feature Request Form</h1>
-        <div>
-          <v-switch hide-details @click="toggleTheme" v-model="themeIsDark">
+        <div class="d-flex">
+          <h1>Feature Request Form</h1>
+        </div>
+
+        <v-chip class="py-6">
+          <v-switch hide-details inset @click="toggleTheme" v-model="themeIsDark">
             <template #prepend>
               <v-icon>mdi-weather-sunny</v-icon>
             </template>
@@ -15,81 +16,97 @@
               <v-icon>mdi-weather-night</v-icon>
             </template>
           </v-switch>
-        </div>
+        </v-chip>
 
       </div>
       <v-form validate-on="input" v-model="formValid" :readonly="submitting" theme="dark">
         <v-row>
-          <v-col>
-            <v-alert v-if="alertData" :type="alertData.type"> {{ alertData.text }}</v-alert>
+          <v-col class="pb-0 pt-6" cols="12">
+            <v-alert class="mb-0" :style="{opacity: alertData ? 100 : 0}" :type="alertData?.type || 'success'"> {{ alertData?.text || "1" }}</v-alert>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="12">
-            <div class="d-flex">
-              <v-text-field
-                class="me-4"
-                hide-details
-                v-model="form.title"
-                label="Feature Request Title"
-                required
-              ></v-text-field>
-              <v-select
-                hide-details
-                v-model="form.requested_by"
-                :items="users"
-                label="Feature Requested By"
-                required
-              >
-                <template #append>
-                  <v-tooltip text="Refresh user options">
-                    <template v-slot:activator="{ props }">
-                      <v-btn v-bind="props" color="green" class="h-100" @click="forceRefreshUsers" :disabled="usersRefreshing">
-                        <v-icon v-if="!usersRefreshing">mdi-refresh</v-icon>
-                        <v-progress-circular v-if="usersRefreshing" color="primary" indeterminate size="small"></v-progress-circular>
-                      </v-btn>
-                    </template>
-                  </v-tooltip>
-                </template>
-              </v-select>
-            </div>
+            <v-text-field
+              density="comfortable"
+              variant="outlined"
+              hide-details
+              v-model="form.title"
+              label="Feature Request Title"
+              required
+            >
+              <template #append-inner>
+                <v-tooltip text="Displayed Title of this Feature Request">
+                  <template v-slot:activator="{ props }">
+                    <v-icon v-bind="props">mdi-format-title</v-icon>
+                  </template>
+                </v-tooltip>
+              </template>
+            </v-text-field>
+          </v-col>
+          <v-col cols="6">
+            <v-autocomplete
+              hide-details
+              variant="outlined"
+              density="comfortable"
+              v-model="form.requested_by"
+              :items="users"
+              label="Request By"
+              required
+            >
+              <template #append-inner>
+                <v-tooltip text="Refresh user options">
+                  <template v-slot:activator="{ props }">
+                    <v-btn :loading="usersRefreshing" density="compact" v-bind="props" flat icon="mdi-refresh" @click="forceRefreshUsers" :disabled="usersRefreshing" />
+                  </template>
+                </v-tooltip>
+              </template>
+            </v-autocomplete>
+          </v-col>
+          <v-col cols="6">
+            <v-select
+              variant="outlined"
+              density="comfortable"
+              hide-details
+              v-model="form.priority"
+              :items="priorities"
+              label="Priority"
+              required
+            >
+              <template #append-inner>
+                <v-tooltip text="Refresh tags/priorities options">
+                  <template v-slot:activator="{ props }">
+                    <v-btn density="compact" flat :loading="optionsRefreshing" v-bind="props" icon="mdi-refresh" @click="forceRefreshOptions" :disabled="optionsRefreshing">
+
+                    </v-btn>
+                  </template>
+                </v-tooltip>
+              </template>
+            </v-select>
+
           </v-col>
           <v-col cols="12">
-            <div class="d-flex">
-              <v-select
-                class="me-4"
-                hide-details
-                v-model="form.tags"
-                :items="tags"
-                label="Tags"
-                chips
-                multiple
-                required
-              ></v-select>
-              <v-select
-                hide-details
-                v-model="form.priority"
-                :items="priorities"
-                label="Priority"
-                required
-              >
-                <template #append>
-                  <v-tooltip text="Refresh tags/priorities options">
-                    <template v-slot:activator="{ props }">
-                      <v-btn v-bind="props" color="green" class="h-100" @click="forceRefreshOptions" :disabled="optionsRefreshing">
-                        <v-icon v-if="!optionsRefreshing">mdi-refresh</v-icon>
-                        <v-progress-circular v-if="optionsRefreshing" color="primary" indeterminate size="small"></v-progress-circular>
-                      </v-btn>
-                    </template>
-                  </v-tooltip>
+            <v-card variant="outlined" style="border-color: #BDBDBD">
+              <v-card-text style="position: relative;">
+                <div class="d-flex">
+                  <h2 class="text-h6 mb-2 text-grey-darken-2">Choose Relevant Tags </h2>
+                </div>
 
-                </template>
-              </v-select>
-            </div>
+                <v-chip-group multiple filter column>
+                  <v-chip variant="outlined" v-for="tag in tags">
+                    {{ tag.title }}
+                  </v-chip>
+                </v-chip-group>
+              </v-card-text>
+            </v-card>
+
           </v-col>
+
+
           <v-col cols="12">
 
             <v-textarea
+              variant="outlined"
               hide-details
               v-model="form.summary"
               label="Feature Summary"
@@ -107,6 +124,7 @@
           </v-col>
           <v-col cols="12">
             <v-textarea
+              variant="outlined"
               hide-details
               v-model="form.description"
               label="Feature Description"
@@ -121,8 +139,9 @@
               </template>
             </v-textarea>
           </v-col>
-          <v-col cols="12">
+          <v-col cols="12" class="pb-0">
             <v-textarea
+              variant="outlined"
               hide-details
               v-model="form.user_story"
               label="User Story"
@@ -137,9 +156,11 @@
               </template>
             </v-textarea>
           </v-col>
-          <v-col cols="12">
+
+          <v-col cols="12" class="py-0">
+              <v-checkbox v-model="form.send_notification" hide-details label="Notify on #eng-main (WIP)"></v-checkbox>
               <v-btn size="large" block color="green" @click="createPage" :disabled="submitting">
-                <span class="me-2">Create Page</span>
+                <span class="me-2"><v-icon>mdi-content-save</v-icon> Create Feature Request</span>
                 <v-progress-circular v-if="submitting" color="primary" indeterminate size="small"></v-progress-circular>
               </v-btn>
           </v-col>
@@ -178,6 +199,7 @@ function toggleTheme () {
           priority: "",
           requested_by: null,
           title: "",
+          send_notification: true,
         },
         alertData: null,
         options: {},
@@ -195,7 +217,19 @@ function toggleTheme () {
       return {theme};
     },
     computed: {
+      propertyTicks() {
+        if (!this.options?.Priority) {
+          return {};
+        }
 
+        let ticks = {};
+        let i = 0;
+        for (let priority of this.options.Priority) {
+          ticks[i++] = priority.name;
+        }
+        console.log(ticks)
+        return ticks;
+      },
       tags() {
         if (!this.options.Tags) return [];
         return this.options.Tags.map(tag => (
@@ -280,9 +314,16 @@ function toggleTheme () {
           priority: "",
           requested_by: "",
           title: "",
+          send_notification: true,
         }
 
       }
     }
   }
 </script>
+<style>
+.v-chip--selected {
+  background-color: #4CAF50 !important;
+  color: white !important;
+}
+</style>
