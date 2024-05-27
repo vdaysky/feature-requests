@@ -1,19 +1,6 @@
 <template xmlns:div="http://www.w3.org/1999/html">
   <v-theme-provider :theme="themeIsDark ? 'dark' : 'light'">
   <v-app>
-  <!--  create a form meant to be embedded in iframe
-   fields:
-   "requested_by": "68a19168-98df-4006-a28a-7e5de618bfba",
-  "priority": "09abb3c0-04e5-4f00-a349-a1e11d1522f2",
-  "tags": [
-    "9fd8e7dd-13f3-4de4-826c-00bd96d926d6"
-  ],
-  "due_date": "2024-05-26",
-  "title": "api created feature reqyest",
-  "summary": "short summaryg",
-  "description": "dscription goes here ",
-  "user_story": "user story"
-   -->
     <v-container>
 
 
@@ -55,10 +42,14 @@
                 required
               >
                 <template #append>
-                  <v-btn color="green" class="h-100" @click="forceRefreshUsers" :disabled="usersRefreshing">
-                    <v-icon v-if="!usersRefreshing">mdi-refresh</v-icon>
-                    <v-progress-circular v-if="usersRefreshing" color="primary" indeterminate size="small"></v-progress-circular>
-                  </v-btn>
+                  <v-tooltip text="Refresh user options">
+                    <template v-slot:activator="{ props }">
+                      <v-btn v-bind="props" color="green" class="h-100" @click="forceRefreshUsers" :disabled="usersRefreshing">
+                        <v-icon v-if="!usersRefreshing">mdi-refresh</v-icon>
+                        <v-progress-circular v-if="usersRefreshing" color="primary" indeterminate size="small"></v-progress-circular>
+                      </v-btn>
+                    </template>
+                  </v-tooltip>
                 </template>
               </v-select>
             </div>
@@ -83,10 +74,15 @@
                 required
               >
                 <template #append>
-                  <v-btn color="green" class="h-100" @click="forceRefreshOptions" :disabled="optionsRefreshing">
-                    <v-icon v-if="!optionsRefreshing">mdi-refresh</v-icon>
-                    <v-progress-circular v-if="optionsRefreshing" color="primary" indeterminate size="small"></v-progress-circular>
-                  </v-btn>
+                  <v-tooltip text="Refresh tags/priorities options">
+                    <template v-slot:activator="{ props }">
+                      <v-btn v-bind="props" color="green" class="h-100" @click="forceRefreshOptions" :disabled="optionsRefreshing">
+                        <v-icon v-if="!optionsRefreshing">mdi-refresh</v-icon>
+                        <v-progress-circular v-if="optionsRefreshing" color="primary" indeterminate size="small"></v-progress-circular>
+                      </v-btn>
+                    </template>
+                  </v-tooltip>
+
                 </template>
               </v-select>
             </div>
