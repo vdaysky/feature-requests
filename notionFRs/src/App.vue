@@ -1,4 +1,5 @@
 <template xmlns:div="http://www.w3.org/1999/html">
+  <v-theme-provider :theme="themeIsDark ? 'dark' : 'light'">
   <v-app>
   <!--  create a form meant to be embedded in iframe
    fields:
@@ -15,8 +16,22 @@
    -->
     <v-container>
 
-      <h1>Feature Request Form</h1>
-      <v-form validate-on="input" v-model="formValid" :readonly="submitting">
+
+      <div class="d-flex justify-space-between">
+        <h1>Feature Request Form</h1>
+        <div>
+          <v-switch hide-details @click="toggleTheme" v-model="themeIsDark">
+            <template #prepend>
+              <v-icon>mdi-weather-sunny</v-icon>
+            </template>
+            <template #append>
+              <v-icon>mdi-weather-night</v-icon>
+            </template>
+          </v-switch>
+        </div>
+
+      </div>
+      <v-form validate-on="input" v-model="formValid" :readonly="submitting" theme="dark">
         <v-row>
           <v-col>
             <v-alert v-if="alertData" :type="alertData.type"> {{ alertData.text }}</v-alert>
@@ -77,12 +92,22 @@
             </div>
           </v-col>
           <v-col cols="12">
+
             <v-textarea
               hide-details
               v-model="form.summary"
               label="Feature Summary"
               required
-            ></v-textarea>
+            >
+
+              <template #append-inner>
+                <v-tooltip text="Brief description of the feature">
+                  <template v-slot:activator="{ props }">
+                    <v-icon v-bind="props">mdi-information</v-icon>
+                  </template>
+                </v-tooltip>
+              </template>
+            </v-textarea>
           </v-col>
           <v-col cols="12">
             <v-textarea
@@ -90,7 +115,15 @@
               v-model="form.description"
               label="Feature Description"
               required
-            ></v-textarea>
+            >
+              <template #append-inner>
+                <v-tooltip text="Include more details, in  particular about specific functionalities and requirements">
+                  <template v-slot:activator="{ props }">
+                    <v-icon v-bind="props">mdi-information</v-icon>
+                  </template>
+                </v-tooltip>
+              </template>
+            </v-textarea>
           </v-col>
           <v-col cols="12">
             <v-textarea
@@ -98,10 +131,18 @@
               v-model="form.user_story"
               label="User Story"
               required
-            ></v-textarea>
+            >
+              <template #append-inner>
+                <v-tooltip text="Describe how the end-user will interact with this feature">
+                  <template v-slot:activator="{ props }">
+                    <v-icon v-bind="props">mdi-information</v-icon>
+                  </template>
+                </v-tooltip>
+              </template>
+            </v-textarea>
           </v-col>
           <v-col cols="12">
-              <v-btn block color="green" @click="createPage" :disabled="submitting">
+              <v-btn size="large" block color="green" @click="createPage" :disabled="submitting">
                 <span class="me-2">Create Page</span>
                 <v-progress-circular v-if="submitting" color="primary" indeterminate size="small"></v-progress-circular>
               </v-btn>
@@ -110,10 +151,23 @@
       </v-form>
     </v-container>
   </v-app>
+  </v-theme-provider>
+
 </template>
 
+<script setup>
+import { useTheme } from 'vuetify'
+
+const theme = useTheme()
+
+function toggleTheme () {
+  console.log("theme", theme)
+  theme.global.name = theme.global.current.dark ? 'light' : 'dark'
+}
+</script>
+
 <script>
-  import {ca} from "vuetify/locale";
+  import {useTheme} from "vuetify";
 
   const API = "https://feature-requests.odays.ky/api";
   export default {
@@ -135,9 +189,17 @@
         submitting: false,
         optionsRefreshing: false,
         usersRefreshing: false,
+        themeIsDark: false,
+        themes: ["light", "dark"],
+        featureSummaryToolTip: false,
       }
     },
+    setup() {
+      const theme = useTheme();
+      return {theme};
+    },
     computed: {
+
       tags() {
         if (!this.options.Tags) return [];
         return this.options.Tags.map(tag => (
@@ -166,7 +228,6 @@
       this.options = await fetch(`${API}/options`).then(res => res.json());
     },
     methods: {
-
       async forceRefreshUsers(){
         this.usersRefreshing = true;
         this.usersRaw = await fetch(`${API}/users?force_refresh=True`).then(res => res.json());
