@@ -21,11 +21,6 @@
       </div>
       <v-form validate-on="input" v-model="formValid" :readonly="submitting" theme="dark">
         <v-row>
-          <v-col class="pb-0 pt-6" cols="12">
-            <v-alert class="mb-0" :style="{opacity: alertData ? 100 : 0}" :type="alertData?.type || 'success'"> {{ alertData?.text || "1" }}</v-alert>
-          </v-col>
-        </v-row>
-        <v-row>
           <v-col cols="12">
             <v-text-field
               density="comfortable"
@@ -91,9 +86,8 @@
                 <div class="d-flex">
                   <h2 class="text-h6 mb-2 text-grey-darken-2">Choose Relevant Tags </h2>
                 </div>
-
-                <v-chip-group multiple filter column>
-                  <v-chip variant="outlined" v-for="tag in tags">
+                <v-chip-group multiple filter column v-model="form.tags">
+                  <v-chip :value="tag.value" variant="outlined" v-for="tag in tags">
                     {{ tag.title }}
                   </v-chip>
                 </v-chip-group>
@@ -160,6 +154,10 @@
             </v-textarea>
           </v-col>
 
+          <v-col class="pb-0 pt-2" cols="12">
+            <v-alert class="mb-0" :style="{opacity: alertData.visible ? 100 : 0}" :type="alertData?.type || 'success'" style="transition: opacity; transition-duration: 1s;"> {{ alertData?.text || "1" }}</v-alert>
+          </v-col>
+
           <v-col cols="12" class="py-0">
               <v-checkbox v-model="form.send_notification" hide-details label="Notify on #eng-main (WIP)"></v-checkbox>
               <v-btn size="large" block color="green" @click="createPage" :disabled="submitting">
@@ -204,7 +202,9 @@ function toggleTheme () {
           title: "",
           send_notification: true,
         },
-        alertData: null,
+        alertData: {
+          visible: false
+        },
         options: {},
         usersRaw: {},
         submitting: false,
@@ -273,10 +273,10 @@ function toggleTheme () {
       },
       showAlert(type, text, timeout) {
         const id = Math.random();
-        this.alertData = {type, text, id};
+        this.alertData = {...this.alertData, type, text, id, visible: true};
         setTimeout(() => {
           if (this.alertData.id === id) {
-            this.alertData = null;
+            this.alertData.visible = false;
           }
         }, timeout);
       },
@@ -319,7 +319,6 @@ function toggleTheme () {
           title: "",
           send_notification: true,
         }
-
       }
     }
   }

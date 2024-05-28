@@ -69,7 +69,7 @@ def property_select(option):
 
 def db_properties(title, requested_by, priority, tags):
     return {
-        "Due Date": property_date(datetime.date.today().isoformat(), None),
+        "Created / Due": property_date(datetime.date.today().isoformat(), None),
         "Tags": property_multiselect(tags),
         "Participants": property_people([requested_by]),
         "Requested By": property_people([requested_by]),
