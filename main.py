@@ -2,10 +2,11 @@ import json
 import os
 
 import requests
-from dotenv import load_dotenv
+
 
 from const import db_properties, heading1, heading2, paragraph, callout, heading3
 
+from dotenv import load_dotenv
 load_dotenv()
 SECRET = os.getenv("NOTION_SECRET")
 

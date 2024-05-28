@@ -2,7 +2,7 @@
   <v-theme-provider :theme="themeIsDark ? 'dark' : 'light'">
   <v-app>
     <v-container>
-      <div class="d-flex justify-space-between">
+      <div class="d-flex justify-space-between mb-2">
         <div class="d-flex">
           <h1>Feature Request Form</h1>
         </div>
@@ -256,19 +256,40 @@ function toggleTheme () {
       }
     },
     async created() {
+      const auth = window.location.pathname.split("/")[1];
+
       // get /users
-      this.usersRaw = await fetch(`${API}/users`).then(res => res.json());
-      this.options = await fetch(`${API}/options`).then(res => res.json());
+      this.usersRaw = await fetch(`${API}/users`, {
+        headers: {
+          "Authorization": auth
+        }
+      }).then(res => res.json());
+      this.options = await fetch(`${API}/options`, {
+        headers: {
+          "Authorization": auth
+        }
+      }).then(res => res.json());
     },
     methods: {
       async forceRefreshUsers(){
+
+        const auth = window.location.pathname.split("/")[1];
         this.usersRefreshing = true;
-        this.usersRaw = await fetch(`${API}/users?force_refresh=True`).then(res => res.json());
+        this.usersRaw = await fetch(`${API}/users?force_refresh=True`, {
+          headers: {
+            "Authorization": auth
+          }
+        }).then(res => res.json());
         this.usersRefreshing = false;
       },
       async forceRefreshOptions(){
+        const auth = window.location.pathname.split("/")[1];
         this.optionsRefreshing = true;
-        this.options = await fetch(`${API}/options?force_refresh=True`).then(res => res.json());
+        this.options = await fetch(`${API}/options?force_refresh=True`, {
+          headers: {
+            "Authorization": auth
+          }
+        }).then(res => res.json());
         this.optionsRefreshing = false;
       },
       showAlert(type, text, timeout) {
@@ -289,10 +310,12 @@ function toggleTheme () {
         this.submitting = true;
         let res;
         try {
+          const auth = window.location.pathname.split("/")[1];
           res = await fetch(`${API}/create`, {
             method: "POST",
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
+              "Authorization": auth
             },
             body: JSON.stringify(this.form)
           });
