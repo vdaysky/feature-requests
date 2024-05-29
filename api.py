@@ -34,9 +34,58 @@ app.add_middleware(
 CACHE = {}
 
 
-def notify_on_slack(message: str):
+def notify_on_slack(title: str, author: str, tags: List[str], url: str, priority):
+    tags_str = ", ".join(tags)
+    if not os.getenv("SLACK_WEBHOOK"):
+        return
+
     requests.post(os.getenv("SLACK_WEBHOOK"), json={
-        "text": message
+        "blocks": [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "emoji": True,
+                    "text": "New Feature Request Created"
+                }
+            },
+            {
+                "type": "divider"
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*{title}*\n\n*<{url}|View on Notion>*"
+                }
+            },
+            {
+                "type": "section",
+                "fields": [
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*Priority:*\n{priority}"
+                    },
+                    {
+                        "type": "mrkdwn",
+                        "text": f"*Tags:*\n{tags_str}"
+                    }
+                ]
+            },
+            {
+                "type": "divider"
+            },
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "plain_text",
+                        "text": f"Author: {author}",
+                        "emoji": True
+                    }
+                ]
+            }
+        ]
     })
 
 
@@ -71,7 +120,7 @@ class CreateFeatureRequestData(BaseModel):
 
 
 def get_username_by_id(user_id: str):
-    users = CACHE["users"]
+    users = CACHE["users"]["results"]
     for user in users:
         if user["id"] == user_id:
             return user["name"]
@@ -81,11 +130,17 @@ def get_username_by_id(user_id: str):
 @app.post("/create", dependencies=[fastapi.Depends(auth)])
 def create_feature_request(data: CreateFeatureRequestData):
     try:
-        create_database_page(DATABASE, data.title, data.requested_by, data.priority, data.tags,
-                             data.summary, data.description, data.user_story)
+        url = create_database_page(DATABASE, data.title, data.requested_by, data.priority, data.tags,
+                                   data.summary, data.description, data.user_story)
 
         if data.send_notification is True:
-            notify_on_slack(f"*New feature request created:*\n{data.title}\nby {get_username_by_id(data.requested_by)}")
+            notify_on_slack(
+                title=data.title,
+                author=get_username_by_id(data.requested_by),
+                tags=data.tags,
+                url=url,
+                priority=data.priority
+            )
 
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=400)

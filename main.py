@@ -107,7 +107,7 @@ def create_database_page(database_id, title, requested_by, priority, tags, summa
             paragraph("...")
         ],
     })
-    page_id = page["id"]
+    return page["url"]
 
 
 def get_page(id):
