@@ -34,8 +34,10 @@ app.add_middleware(
 CACHE = {}
 
 
-def notify_on_slack(title: str, author: str, tags: List[str], url: str, priority):
-    tags_str = ", ".join(tags)
+def notify_on_slack(title: str, summary: str, author: str, tags: List[str], url: str, priority):
+    tags_str = ", ".join([get_tag_by_id(x) for x in tags])
+    priority = get_priority_by_id(priority)
+
     if not os.getenv("SLACK_WEBHOOK"):
         return
 
@@ -56,7 +58,7 @@ def notify_on_slack(title: str, author: str, tags: List[str], url: str, priority
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*{title}*\n\n*<{url}|View on Notion>*"
+                    "text": f"*{title}*\n\n{summary}\n\n*<{url}|View on Notion>*"
                 }
             },
             {
@@ -124,6 +126,22 @@ def get_username_by_id(user_id: str):
     for user in users:
         if user["id"] == user_id:
             return user["name"]
+    return "Unknown"
+
+
+def get_tag_by_id(tag_id: str):
+    tags = CACHE["options"]["results"]["Tags"]["multi_select"]
+    for tag in tags:
+        if tag["id"] == tag_id:
+            return tag["name"]
+    return "?"
+
+
+def get_priority_by_id(priority_id: str):
+    priorities = CACHE["options"]["results"]["Priority"]["select"]
+    for priority in priorities:
+        if priority["id"] == priority_id:
+            return priority["name"]
     return "Unknown"
 
 
