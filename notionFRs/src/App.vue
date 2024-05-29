@@ -159,7 +159,7 @@
           </v-col>
 
           <v-col cols="12" class="py-0">
-              <v-checkbox v-model="form.send_notification" hide-details label="Notify on #eng-main (WIP)"></v-checkbox>
+              <v-checkbox v-model="form.send_notification" hide-details label="Notify on #eng-main"></v-checkbox>
               <v-btn size="large" block color="green" @click="createPage" :disabled="submitting">
                 <span class="me-2"><v-icon>mdi-content-save</v-icon> Create Feature Request</span>
                 <v-progress-circular v-if="submitting" color="primary" indeterminate size="small"></v-progress-circular>
