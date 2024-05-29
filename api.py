@@ -130,7 +130,7 @@ def get_username_by_id(user_id: str):
 
 
 def get_tag_by_id(tag_id: str):
-    tags = CACHE["options"]["results"]["Tags"]["multi_select"]
+    tags = CACHE["options"]["Tags"]
     for tag in tags:
         if tag["id"] == tag_id:
             return tag["name"]
@@ -138,7 +138,7 @@ def get_tag_by_id(tag_id: str):
 
 
 def get_priority_by_id(priority_id: str):
-    priorities = CACHE["options"]["results"]["Priority"]["select"]
+    priorities = CACHE["options"]["Priority"]
     for priority in priorities:
         if priority["id"] == priority_id:
             return priority["name"]
