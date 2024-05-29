@@ -157,7 +157,8 @@ def create_feature_request(data: CreateFeatureRequestData):
                 author=get_username_by_id(data.requested_by),
                 tags=data.tags,
                 url=url,
-                priority=data.priority
+                priority=data.priority,
+                summary=data.summary
             )
 
     except Exception as e:
