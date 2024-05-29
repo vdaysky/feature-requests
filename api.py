@@ -4,11 +4,13 @@ from typing import List
 
 import fastapi
 from fastapi import FastAPI, Query, Security, Header, HTTPException
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from main import get_users, get_database_options, create_database_page
+import requests
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -32,8 +34,14 @@ app.add_middleware(
 CACHE = {}
 
 
-def auth(header: str = Security(Header(name="Authorization"))):
-    if header != os.getenv("API_KEY"):
+def notify_on_slack(message: str):
+    requests.post(os.getenv("SLACK_WEBHOOK"), json={
+        "text": message
+    })
+
+
+def auth(header: str = Security(APIKeyHeader(name="Authorization"))):
+    if header != os.getenv("API_SECRET"):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
 
@@ -59,6 +67,15 @@ class CreateFeatureRequestData(BaseModel):
     summary: str
     description: str
     user_story: str
+    send_notification: bool = False
+
+
+def get_username_by_id(user_id: str):
+    users = CACHE["users"]
+    for user in users:
+        if user["id"] == user_id:
+            return user["name"]
+    return "Unknown"
 
 
 @app.post("/create", dependencies=[fastapi.Depends(auth)])
@@ -66,6 +83,9 @@ def create_feature_request(data: CreateFeatureRequestData):
     try:
         create_database_page(DATABASE, data.title, data.requested_by, data.priority, data.tags,
                              data.summary, data.description, data.user_story)
+
+        if data.send_notification is True:
+            notify_on_slack(f"*New feature request created:*\n{data.title}\nby {get_username_by_id(data.requested_by)}")
 
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=400)
