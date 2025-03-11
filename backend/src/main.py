@@ -3,12 +3,14 @@ import os
 
 import requests
 
-
 from const import db_properties, heading1, heading2, paragraph, callout, heading3
 
 from dotenv import load_dotenv
+
+from settings import settings
+
 load_dotenv()
-SECRET = os.getenv("NOTION_SECRET")
+SECRET = settings.notion_secret
 
 
 def notion_request(method, url, data):
@@ -108,6 +110,67 @@ def create_database_page(database_id, title, requested_by, priority, tags, summa
         ],
     })
     return page["url"]
+
+
+def create_page_database(page_id, title, tags_options=None, priority_options=None):
+    """
+    Create a new database on a Notion page with predefined properties
+
+    Args:
+        page_id: ID of the parent page
+        title: Database title
+        tags_options: List of tag options with name and color
+        priority_options: List of priority options with name and color
+    """
+    database = notion_post("databases", {
+        "parent": {
+            "type": "page_id",
+            "page_id": str(page_id)
+        },
+        "icon": {
+            "type": "emoji",
+            "emoji": "📋"
+        },
+        "title": [
+            {
+                "type": "text",
+                "text": {
+                    "content": title,
+                    "link": None
+                }
+            }
+        ],
+        "properties": {
+            "Name": {
+                "title": {}
+            },
+            "Created / Due": {
+                "date": {}
+            },
+            "Tags": {
+                "type": "multi_select",
+                "multi_select": {
+                    "options": tags_options or []
+                }
+            },
+            "Participants": {
+                "people": {}
+            },
+            "Requested By": {
+                "people": {}
+            },
+            "Priority": {
+                "select": {
+                    "options": priority_options or [
+                        {"name": "High", "color": "red"},
+                        {"name": "Medium", "color": "yellow"},
+                        {"name": "Low", "color": "green"}
+                    ]
+                }
+            }
+        }
+    })
+    return database
 
 
 def get_page(id):

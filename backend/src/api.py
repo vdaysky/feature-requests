@@ -8,19 +8,20 @@ from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
+from starlette.staticfiles import StaticFiles
 
 from main import get_users, get_database_options, create_database_page
 import requests
 
 from dotenv import load_dotenv
+
+from settings import settings
+
 load_dotenv()
 
 app = FastAPI()
 
-# my test db "d46b47a8-5a4f-4d35-adca-0f9a4b88d82a"
-
-# conductive db
-DATABASE = "39d0202f-5152-4a5e-b55f-8de15305f605"
+DATABASE = settings.notion_db
 
 app.add_middleware(
     CORSMiddleware,
@@ -92,7 +93,7 @@ def notify_on_slack(title: str, summary: str, author: str, tags: List[str], url:
 
 
 def auth(header: str = Security(APIKeyHeader(name="Authorization"))):
-    if header != os.getenv("API_SECRET"):
+    if header != settings.api_secret:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
 
@@ -163,3 +164,6 @@ def create_feature_request(data: CreateFeatureRequestData):
 
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=400)
+
+
+app.mount("/", StaticFiles(directory="../../notionFRs/dist"), name="static")

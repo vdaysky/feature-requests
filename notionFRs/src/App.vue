@@ -1,4 +1,4 @@
-<template xmlns:div="http://www.w3.org/1999/html">
+<template>
   <v-theme-provider :theme="themeIsDark ? 'dark' : 'light'">
   <v-app>
     <v-container>
@@ -187,7 +187,8 @@ function toggleTheme () {
 <script>
   import {useTheme} from "vuetify";
 
-  const API = "https://feature-requests.odays.ky/api";
+  console.log("env", process.env)
+  const API = "";
   export default {
     data() {
       return {
@@ -256,9 +257,10 @@ function toggleTheme () {
       }
     },
     async created() {
-      const auth = window.location.pathname.split("/")[1];
-
       // get /users
+      const urlParams = new URLSearchParams(window.location.search);
+      const auth = urlParams.get("auth");
+      console.log("created:", auth)
       this.usersRaw = await fetch(`${API}/users`, {
         headers: {
           "Authorization": auth
@@ -272,8 +274,8 @@ function toggleTheme () {
     },
     methods: {
       async forceRefreshUsers(){
-
-        const auth = window.location.pathname.split("/")[1];
+        const urlParams = new URLSearchParams(window.location.search);
+        const auth = urlParams.get("auth");
         this.usersRefreshing = true;
         this.usersRaw = await fetch(`${API}/users?force_refresh=True`, {
           headers: {
@@ -283,7 +285,8 @@ function toggleTheme () {
         this.usersRefreshing = false;
       },
       async forceRefreshOptions(){
-        const auth = window.location.pathname.split("/")[1];
+        const urlParams = new URLSearchParams(window.location.search);
+        const auth = urlParams.get("auth");
         this.optionsRefreshing = true;
         this.options = await fetch(`${API}/options?force_refresh=True`, {
           headers: {
@@ -307,10 +310,11 @@ function toggleTheme () {
           return;
         }
 
-        this.submitting = true;
         let res;
+        this.submitting = true;
         try {
-          const auth = window.location.pathname.split("/")[1];
+          const urlParams = new URLSearchParams(window.location.search);
+          const auth = urlParams.get("auth");
           res = await fetch(`${API}/create`, {
             method: "POST",
             headers: {
